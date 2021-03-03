@@ -1,0 +1,62 @@
+---
+title: "test_scrape"
+author: "Collin"
+date: "3/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest)
+library(stringr)
+
+```
+
+```{r, eval = FALSE}
+usethis::edit_r_environ("project")
+```
+Put down your password in the file, (replace XXXXXXXXXXXXXXXXXX with your password)
+```
+APIKey=JmRqoKUcjfvCh_DqsTvZjZsjRIHsCS1Dsb8tT4HxzE1ryYFgKeJmWE9VQtua2KZPVh0DxuEc9Zo1e_D7sVajDVI3EWYfHcOfEbeWBeoLYiu4HU9zIM2Jr6D9EsE5YHYx
+```
+One your are done, run the following line
+```{r, eval = FALSE}
+readRenviron(".Renviron")
+```
+Then your password could be retrieved by `Sys.getenv("DATABASEPW")`.
+
+The `.Renviron` won't be pushed to the git repo because the file was specified in `.gitignore`.
+
+```{r}
+Sys.getenv("DATABASEPW")
+```
+
+
+```{r}
+
+wiki_page = read_html("https://en.wikipedia.org/wiki/List_of_highest-grossing_films")
+wiki_tables = wiki_page %>% html_nodes("table") %>% 
+  html_table(fill=TRUE)
+
+top_fifty = (wiki_tables[[1]]) %>% 
+  select(-Peak)
+top_fifty
+
+```
+```{r}
+#GET the IMDB rankings of all these movies using the IMDB API (Actually I think its the Trakt API):
+library(httr)
+library(jsonlite)
+install.packages("tRakt")
+library(tRakt)
+client_id = "2451c159949be90ceec87017594cf2ecab0364133deafc984a2960bc58e42fcb"
+
+trakt_app = 
+str(trakt_app)
+stop_for_status(trakt_app)
+
+stop_for_status(trakt_app)
+
+```
+
