@@ -3,7 +3,7 @@ name: CRON
 on:
   schedule:
     # see https://crontab.guru/
-    - cron: '0 0 * * *'  # run every day at 12:00am
+    - cron: '0 0 * * *'  # At midnight every day
     # - cron: '*/15 * * * *'  # run every 15 minutes
 
 jobs:
