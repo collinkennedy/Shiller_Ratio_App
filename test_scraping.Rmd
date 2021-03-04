@@ -30,6 +30,7 @@ The `.Renviron` won't be pushed to the git repo because the file was specified i
 
 ```{r}
 Sys.getenv("DATABASEPW")
+Sys.getenv("ALPHA_VANTAGE_APIKEY")
 ```
 
 
@@ -48,15 +49,37 @@ top_fifty
 #GET the IMDB rankings of all these movies using the IMDB API (Actually I think its the Trakt API):
 library(httr)
 library(jsonlite)
-install.packages("tRakt")
-library(tRakt)
-client_id = "2451c159949be90ceec87017594cf2ecab0364133deafc984a2960bc58e42fcb"
+# install.packages("tRakt")
+# library(tRakt)
 
-trakt_app = 
-str(trakt_app)
-stop_for_status(trakt_app)
+#test alpha vantage API:
+str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = "IBM", 
+         apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") )
 
-stop_for_status(trakt_app)
+
+json = GET("https://www.alphavantage.co/query?function=EARNINGS&symbol=IBM&apikey=demo")
+text = fromJSON(content(json,type = "text", encoding = "UTF-8"))
+text$annualEarnings
+
+
+api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = "IBM", 
+         apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
+data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
+data$annualEarnings
+
+#make sure they're the same:
+identical(text,data)
+
+
+
+
+```
+
+
+```{r}
+
+
+
 
 ```
 
