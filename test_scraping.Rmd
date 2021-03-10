@@ -46,8 +46,10 @@ top_fifty = (wiki_tables[[1]]) %>%
 top_fifty
 
 ```
+
+
 ```{r}
-#GET the IMDB rankings of all these movies using the IMDB API (Actually I think its the Trakt API):
+
 library(httr)
 library(jsonlite)
 # install.packages("tRakt")
@@ -88,7 +90,7 @@ data$annualEarnings
 ```
 
 
-
+#Inflation Table
 ```{r}
 #inflationdata
 web_source= read_html("https://inflationdata.com/Inflation/Inflation_Rate/HistoricalInflation.aspx")
@@ -115,6 +117,8 @@ inflation_table = inflation_table %>%
 
 inflation_table
 ```
+
+
 ```{r}
 host <- "34.123.54.80"  
 # NASDAQ <- read.delim("~/Google Drive/Programming Folder (4Transfer to Collin's Files V2)/R/STA141B/data_technologies_project/NASDAQ.txt")
@@ -138,8 +142,6 @@ api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&sym
          apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
 data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
 data$annualEarnings
-str(data$annualEarnings)
-
 
 
 
@@ -172,7 +174,7 @@ annual_eps = annual_eps %>%
 inflation_table = as_tibble(con %>% tbl("inflationTable"))
 
 intermediate_df = inner_join(inflation_table,annual_eps)
-
+intermediate_df
 
 
 
@@ -182,11 +184,57 @@ inflation_adjusted_eps_df= intermediate_df %>%
   mutate(inf_adj_eps = as.numeric(reportedEPS)*(1 - average_inflation)) %>% 
   slice(1:10)
 
+#Obtain stock price from previous day with another API call (maybe move this piece up)
+api_call_price = GET(str_glue("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={apikey}&outputsize=compact",symbol = "IBM", 
+         apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
+price_data = fromJSON(content(api_call_price, type = "text", encoding = "UTF-8"))
+str(price_data)
+
+most_recent_price = as.numeric(price_data$`Time Series (Daily)`[[1]]$`4. close`)#accesses the closing price of the previous (market) day, use this to calculate price
+
+most_recent_price
+
 #calculate shiller PE
+inflation_adjusted_eps_df %>% 
+  summarize(shiller_ratio = `most_recent_price`/mean(inf_adj_eps))
+
 
 
 
 
 
 ```
+
+
+
+
+```{r}
+
+library(pool)
+library(DBI)
+library(rvest)
+library(tidyverse)
+
+# devtools::install_github("rstudio/pool")
+
+#access my database
+host = host <- "34.123.54.80"
+con <- dbConnect(
+    RPostgres::Postgres(),
+    dbname = "postgres",
+    user = "postgres", password = Sys.getenv("DATABASEPW"), host = host
+)
+
+nasdaq = as_tibble(con %>% tbl("tickerTable"))
+nasdaq
+
+```
+
+
+
+
+
+
+
+
 

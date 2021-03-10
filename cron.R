@@ -37,7 +37,7 @@ inflation_table = inflation_table %>%
   bind_cols(avg_inf) %>% 
   rename("average_inflation" = "...2")
 
-#write to database
+#write to database/update database with inflation data
 dbWriteTable(con, "inflationTable", inflation_table, overwrite = TRUE)
 
 
