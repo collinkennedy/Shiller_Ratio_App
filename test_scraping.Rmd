@@ -11,6 +11,7 @@ library(tidyverse)
 library(rvest)
 library(stringr)
 
+
 ```
 
 ```{r, eval = FALSE}
@@ -60,6 +61,7 @@ str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&ap
 json = GET("https://www.alphavantage.co/query?function=EARNINGS&symbol=IBM&apikey=demo")
 text = fromJSON(content(json,type = "text", encoding = "UTF-8"))
 text$annualEarnings
+text$annualEarnings
 
 
 api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = "IBM", 
@@ -68,7 +70,7 @@ data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
 data$annualEarnings
 
 #make sure they're the same:
-identical(text,data)
+#identical(text,data)
 
 
 #testing
@@ -77,6 +79,111 @@ identical(text,data)
 
 
 ```{r}
+#FLow of app:
+
+
+
+
+
+```
+
+
+
+```{r}
+#inflationdata
+web_source= read_html("https://inflationdata.com/Inflation/Inflation_Rate/HistoricalInflation.aspx")
+table = web_source %>% 
+  html_nodes("table") %>% 
+  html_table()
+
+inflation_table = as_tibble(table[[1]]) 
+
+
+inflation_table = inflation_table %>% 
+  slice(2:208) %>% 
+  select(Year, Ave.) %>% 
+  rename("average_inflation" = "Ave.")
+
+avg_inf = inflation_table %>% 
+  pull %>% parse_number()
+avg_inf = avg_inf/100 
+
+inflation_table = inflation_table %>% 
+  select(Year) %>% 
+  bind_cols(avg_inf) %>% 
+  rename("average_inflation" = "...2")
+
+inflation_table
+```
+```{r}
+host <- "34.123.54.80"  
+# NASDAQ <- read.delim("~/Google Drive/Programming Folder (4Transfer to Collin's Files V2)/R/STA141B/data_technologies_project/NASDAQ.txt")
+
+
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  user = "postgres", password = Sys.getenv("DATABASEPW"), host = host)
+
+
+con %>% dbListTables
+con %>% 
+  dbListFields("inflationTable"
+  )
+
+#calculate Shiller PE for IBM:
+
+#first, inner_join based on Year
+api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = "IBM", 
+         apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
+data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
+data$annualEarnings
+str(data$annualEarnings)
+
+
+
+
+#use regex to convert the date into just a 4 digit year
+annual_eps = data$annualEarnings
+fiscal_year = annual_eps %>% pull(fiscalDateEnding)
+
+pattern = "\\d\\d\\d\\d"
+simple_fiscal_year = str_extract(fiscal_year,regex(pattern) )
+str(simple_fiscal_year) #the fiscalDateEnding variable is a string/char
+
+#need to check what object type the date in the inflation table is: update; its int
+str(con %>% 
+      tbl("inflationTable") %>% 
+      pull(Year))
+  
+#convert year from api call to int:
+simple_fiscal_year = as.numeric(simple_fiscal_year) #now its "num"...
+
+
+#reattach the modified Year column to the annual_eps df:
+annual_eps = annual_eps %>% 
+  select(reportedEPS) %>% 
+  bind_cols(simple_fiscal_year) %>% 
+  rename("Year" = "...2")
+
+
+
+#join the year/eps (api call) table with the year/inflation table (from db)
+inflation_table = as_tibble(con %>% tbl("inflationTable"))
+
+intermediate_df = inner_join(inflation_table,annual_eps)
+
+
+
+
+#calculate an inflation adjusted earnings per share
+#restrict to only 2011-2020
+inflation_adjusted_eps_df= intermediate_df %>% 
+  mutate(inf_adj_eps = as.numeric(reportedEPS)*(1 - average_inflation)) %>% 
+  slice(1:10)
+
+#calculate shiller PE
+
 
 
 
