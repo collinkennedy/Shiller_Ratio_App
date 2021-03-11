@@ -11,6 +11,7 @@ library(DBI)
 library(rvest)
 library(tidyverse)
 library(ggplot2)
+library(pool)
 
 # devtools::install_github("rstudio/pool")
 
@@ -47,7 +48,7 @@ ui <- fluidPage(
            plotOutput("distPlot"),
            plotOutput("marketShillerRatio"), #this will display a histogram of the market CAPE versus the chosen companies CAPE
            textOutput("overOrUnderValued"), #will display whether or not the stock is over or under valued based on the market
-           plotOutput("earningsPerShare") #plot the companies 10 years worth of inflation_adjusted earnings 2011-2020
+           plotOutput("earningsPerShare"), #plot the companies 10 years worth of inflation_adjusted earnings 2011-2020
             
             tableOutput("test")
         )
