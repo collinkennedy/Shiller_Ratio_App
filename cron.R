@@ -2,7 +2,7 @@
 library(DBI)
 library(tidyverse)
 library(reader)
-library(httr)
+?library(httr)
 library(rvest)
 
 host <- "34.123.54.80"  # replace it with your server ip
@@ -39,6 +39,15 @@ inflation_table = inflation_table %>%
 
 #write to database/update database with inflation data
 dbWriteTable(con, "inflationTable", inflation_table, overwrite = TRUE)
+
+
+
+#get SP500 Shiller PE ratio
+web_page = read_html("https://www.gurufocus.com/shiller-PE.php")
+scraped = web_page %>% html_nodes("h3") %>% html_text()
+sp500_shiller_pe = str_extract(scraped[15],"\\d\\d[.]\\d*")
+sp500_shiller_table = tibble(sp500_shiller_pe = sp500_shiller_pe)
+dbWriteTable(con,"SP500ShillerTable", sp500_shiller_table, overwrite = TRUE)
 
 
 if (!("tickerTable" %in% dbListTables(con))) {
