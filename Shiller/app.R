@@ -59,6 +59,20 @@ ui <- fluidPage(
 )
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 server <- function(input, output,session) {
     
     #The company that the user chooses
@@ -145,14 +159,12 @@ server <- function(input, output,session) {
         paste("Inflation Adjusted Earnings per Share: 2011-2020")
     })
     
-    # output$earningsPerShare = renderPlot({
-    #     ggplot(data = shiller_data())+
-    #         geom_histogram(mapping = aes(x = Year, y = inf_adj_eps))
-    
+    output$earningsPerShare = renderPlot({
+        ggplot(data = shiller_data())+
+            geom_histogram(mapping = aes(x = Year, y = inf_adj_eps))
 
-    
-    
+    }
 }
-?selectizeInput
+
 # Run the application 
 shinyApp(ui = ui, server = server)

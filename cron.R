@@ -50,6 +50,19 @@ if (!("tickerTable" %in% dbListTables(con))) {
   )
 }
 
+
+#S&P 500 Data
+if (!("SP500Table" %in% dbListTables(con))) {
+  # create table if it doesn't exist
+  dbWriteTable(
+    con,
+    "SP500Table",
+    SP500#fix this
+  )
+}
+
+
+
 # con %>% dbListTables()
 # con %>% tbl("tickerTable") %>% print
 
@@ -70,9 +83,6 @@ if (!("tickerTable" %in% dbListTables(con))) {
 # con %>%
 #   tbl("tickerTable") %>% 
 #   print
-
-
-
 
 
 

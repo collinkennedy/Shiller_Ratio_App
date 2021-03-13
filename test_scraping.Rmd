@@ -10,6 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(rvest)
 library(stringr)
+library(httr)
+library(jsonlite)
+library(pool)
 
 
 ```
@@ -50,8 +53,7 @@ top_fifty
 
 ```{r}
 
-library(httr)
-library(jsonlite)
+
 # install.packages("tRakt")
 # library(tRakt)
 
@@ -89,6 +91,16 @@ data$annualEarnings
 
 ```
 
+```{r}
+#check S&P 500 data:
+SP500 = read_csv("constituents_csv.csv")
+
+dbWriteTable(con, "SP500Table", SP500)
+con %>% dbListTables()
+
+
+
+```
 
 #Inflation Table
 ```{r}
@@ -132,13 +144,12 @@ con <- dbConnect(
 
 con %>% dbListTables
 con %>% 
-  dbListFields("inflationTable"
-  )
+  dbListFields("inflationTable")
 
 #calculate Shiller PE for IBM:
 
 #first, inner_join based on Year
-api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = "IBM", 
+api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = "NVDA", 
          apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
 data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
 data$annualEarnings
@@ -173,7 +184,7 @@ annual_eps = annual_eps %>%
 #join the year/eps (api call) table with the year/inflation table (from db)
 inflation_table = as_tibble(con %>% tbl("inflationTable"))
 
-intermediate_df = inner_join(inflation_table,annual_eps)
+intermediate_df = inner_join(inflation_table,annual_eps) #This is the joined table
 intermediate_df
 
 
@@ -183,9 +194,10 @@ intermediate_df
 inflation_adjusted_eps_df= intermediate_df %>% 
   mutate(inf_adj_eps = as.numeric(reportedEPS)*(1 - average_inflation)) %>% 
   slice(1:10)
+inflation_adjusted_eps_df
 
 #Obtain stock price from previous day with another API call (maybe move this piece up)
-api_call_price = GET(str_glue("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={apikey}&outputsize=compact",symbol = "IBM", 
+api_call_price = GET(str_glue("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={apikey}&outputsize=compact",symbol = "NVDA", 
          apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
 price_data = fromJSON(content(api_call_price, type = "text", encoding = "UTF-8"))
 str(price_data)
@@ -200,9 +212,12 @@ inflation_adjusted_eps_df %>%
 
 
 
+SP500 %>% filter(Name == "Nvidia Corporation")
 
+ggplot(data = inflation_adjusted_eps_df, mapping =aes(x = Year, y = inf_adj_eps))+
+            geom_col()
 
-
+?geom_bar()
 ```
 
 
@@ -226,9 +241,13 @@ con <- dbConnect(
 )
 
 nasdaq = as_tibble(con %>% tbl("tickerTable"))
-nasdaq
+# View(nasdaq)
+
+
 
 ```
+
+
 
 
 
