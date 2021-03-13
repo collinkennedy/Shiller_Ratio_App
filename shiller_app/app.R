@@ -9,7 +9,7 @@
 
 library(shiny)
 
-library(DBI)
+# library(DBI)
 library(rvest)
 library(tidyverse)
 library(ggplot2)
@@ -28,6 +28,7 @@ con <- dbPool(
 inflation_table = as_tibble(con %>% tbl("inflationTable")) #both of these are successfully accessed
 sp500 = as_tibble(con %>% tbl("SP500Table"))
 nasdaq = as_tibble(con %>% tbl("tickerTable"))
+sp500shiller = as_tibble(con %>% tbl("SP500ShillerTable"))
 
 
 # Define UI for application that draws a histogram
@@ -47,8 +48,8 @@ ui = fluidPage(
                         choices = c("-", sort(sp500$Name)))
             
         ),      
-        
         mainPanel(
+            textOutput("sp500shiller"),
             textOutput("shillerTitle"),
             tableOutput("shillerRatio"),
             textOutput("eps_title"),
@@ -229,12 +230,14 @@ server = function(input, output, session) {
     
     
     #will use this also as a condition on whether or not to plot the routes in a given month or entire year
-    
+    output$sp500shiller = renderText({
+        paste("S&P 500's Shiller P/E: ", sp500shiller[1])
+    })
     
     output$shillerTitle = renderText({
         #Shiller Ratio of ____ and S&P 500
         if(req(nrow(shiller_data()>0))){
-            paste("Shiller Ratio for ", company_data()$Name, ":")
+            paste("Shiller P/E for ", company_data()$Name, ":")
 
         }
     })
@@ -251,17 +254,19 @@ server = function(input, output, session) {
     
     output$eps_title = renderText({
         if(req(nrow(shiller_data()>0))){
-        paste("Inflation-Adjusted Earnings Per Share: 2011 - 2020")
+        paste(company_data()$Name,"'s Inflation-Adjusted Earnings Per Share: 2011 - 2020")
         }
     })
     
     output$eps_hist = renderPlot({
         #inflation adjusted data here
         ggplot(data = inflation_data(),mapping = aes(x = Year, y = inf_adj_eps))+
-            geom_col()
+            geom_col(colour = "black", fill = "darkgreen")+xlab("Year") + ylab("Inflation-adjusted Earnings per Share")+
+            theme_minimal()
     })
     
 }
 
+?geom_col
 shinyApp(ui, server)
 

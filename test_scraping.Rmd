@@ -224,31 +224,28 @@ ggplot(data = inflation_adjusted_eps_df, mapping =aes(x = Year, y = inf_adj_eps)
 
 
 ```{r}
+#make industry tibble:
+con %>% dbListTables()
+con %>% tbl("SP500Table") %>% 
+  group_by(Sector) %>% summarize(comp_per_sector = n()) %>% 
 
-library(pool)
-library(DBI)
-library(rvest)
-library(tidyverse)
-
-# devtools::install_github("rstudio/pool")
-
-#access my database
-host = host <- "34.123.54.80"
-con <- dbConnect(
-    RPostgres::Postgres(),
-    dbname = "postgres",
-    user = "postgres", password = Sys.getenv("DATABASEPW"), host = host
-)
-
-nasdaq = as_tibble(con %>% tbl("tickerTable"))
-# View(nasdaq)
-
-
-
+con %>% 
 ```
 
 
 
+```{r}
+
+web_page = read_html("https://www.gurufocus.com/shiller-PE.php")
+scraped = web_page %>% html_nodes("h3") %>% html_text()
+sp500_shiller_pe = str_extract(scraped[15],"\\d\\d[.]\\d*")
+sp500_shiller_table = tibble(sp500_shiller_pe = sp500_shiller_pe)
+sp500_shiller_table
+
+
+#make sure it exists in the databse
+con %>% dbListTables()
+```
 
 
 
