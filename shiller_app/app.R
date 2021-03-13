@@ -29,18 +29,20 @@ inflation_table = as_tibble(con %>% tbl("inflationTable")) #both of these are su
 sp500 = as_tibble(con %>% tbl("SP500Table"))
 nasdaq = as_tibble(con %>% tbl("tickerTable"))
 sp500shiller = as_tibble(con %>% tbl("SP500ShillerTable"))
-
+sectors = con %>% tbl("SP500Table") %>% 
+    group_by(Sector) %>% summarize(comp_per_sector = n()) %>% select(Sector) #Will be used as the list of possibilities of sectors
+sectors = as_tibble(sectors)
 
 # Define UI for application that draws a histogram
 ui = fluidPage(
-    titlePanel("Shiller (CAPE) Ratio Calculator: "),
+    titlePanel("Shiller (Cyclically Adjusted Price to Earnings) Ratio Calculator: "),
     sidebarLayout(
         sidebarPanel(
             
             #3 selectInputs to get each of the user inputs needed
             selectInput(inputId = "industryChoice",
                         label = "Select an Industry",
-                        choices = c("-")),
+                        choices = c("-",sort(sectors$Sector))),
             
             
             selectInput(inputId = "stockChoice",
@@ -59,7 +61,7 @@ ui = fluidPage(
 )
 
 server = function(input, output, session) {
-    
+
     #chosen company data here
     company_data = reactive({
         chosenCompany = sp500 %>% 
@@ -166,64 +168,27 @@ server = function(input, output, session) {
     })
     
     
+    observe({ #gets 1st input from user
+        chosenIndustry = input$industryChoice
+        
+        #need the available options to only be of the chosen industry type
+
+        data = sp500 %>% 
+            filter(Sector == chosenIndustry)
+        
+        #from Randh's example, allows me to isolate input$origin, make it the "original" selected input
+        origSelectInp = isolate(input$industryChoice)
+        if(is.null(origSelectInp) || !(origSelectInp %in% chosenIndustry)) {
+            origSelectInp = head(chosenIndustry, 1)
+        }
+        ##update destinations once an origin is chosen
+        updateSelectInput(session, "stockChoice",
+                          label = "Select a Company",
+                          choices = c("-", sort(data$Name)),
+                          selected = origSelectInp)
+    })
     
     
-    
-    #how I will update select options
-    # observe({ #gets 1st input from user
-    #     chosenOrigin = input$origin
-    #     
-    #     #check to see if the user input is one of following origin airports
-    #     jfk = c("John F Kennedy Intl")
-    #     lga = c("La Guardia")
-    #     ewr = c("Newark Liberty Intl")
-    #     
-    #     
-    #     
-    #     if(chosenOrigin %in% jfk){
-    #         data = JFKdestinations
-    #     }
-    #     else if(chosenOrigin %in% lga){
-    #         data = LGAdestinations
-    #     }
-    #     else if(chosenOrigin %in% ewr){
-    #         data = EWRdestinations
-    #     }
-    #     
-    #     #from Randh's example, allows me to isolate input$origin, make it the "original" selected input
-    #     origSelectInp = isolate(input$origin)
-    #     if(is.null(origSelectInp) || !(origSelectInp %in% chosenOrigin)) {
-    #         origSelectInp = head(chosenOrigin, 1)
-    #     }
-    #     ##update destinations once an origin is chosen
-    #     updateSelectInput(session, "dest",
-    #                       label = "Destination",
-    #                       choices = c("-", data),
-    #                       selected = origSelectInp)
-    # })
-    
-    
-    #Now we need to do the same thing for month...
-    # observe({
-    #     origAirport = input$origin
-    #     destAirport = input$dest
-    #     months = complete_flights %>%
-    #         filter(origin_name == origAirport, destination_name == destAirport) %>%
-    #         select(month, month_name) %>%
-    #         arrange(month) %>%
-    #         pull(month_name)
-    #     
-    #     
-    #     chosenDestination = isolate(input$dest)
-    #     if(is.null(chosenDestination) || !(chosenDestination %in% destAirport)) {
-    #         chosenDestination = head(destAirport, 1)
-    #     }
-    #     #update month user input with the corresponding months available, given the flight route chosen
-    #     updateSelectInput(session, "month",
-    #                       label = "Month",
-    #                       choices = months,
-    #                       selected = chosenDestination)
-    # })
     
     
     
