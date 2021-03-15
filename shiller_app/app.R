@@ -62,9 +62,14 @@ ui = fluidPage(
 )
 
 server = function(input, output, session) {
+    
+    
 
     #chosen company data here
     company_data = reactive({
+        req(input$stockChoice, cancelOutput = TRUE)
+        
+        
         chosenCompany = sp500 %>% 
             filter(Name == input$stockChoice)
         return(chosenCompany)
@@ -72,6 +77,7 @@ server = function(input, output, session) {
     
     #inflation adjusted and shiller ratio calculations here
     shiller_data = reactive({
+        req(company_data()$Symbol, cancelOutput = TRUE)
         api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = company_data()$Symbol, 
                                 apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
         data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
@@ -128,6 +134,7 @@ server = function(input, output, session) {
     })
     
     inflation_data = reactive({
+        req(company_data()$Symbol, cancelOutput = TRUE)
         api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = company_data()$Symbol, 
                                 apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
         data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
@@ -170,6 +177,7 @@ server = function(input, output, session) {
     
     
     observe({ #gets 1st input from user
+    
         chosenIndustry = input$industryChoice
         
         #need the available options to only be of the chosen industry type
