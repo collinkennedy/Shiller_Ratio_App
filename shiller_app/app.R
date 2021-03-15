@@ -54,6 +54,7 @@ ui = fluidPage(
             textOutput("sp500shiller"),
             textOutput("shillerTitle"),
             tableOutput("shillerRatio"),
+            textOutput("overOrUnder"),
             textOutput("eps_title"),
             plotOutput("eps_hist")
         )
@@ -214,6 +215,10 @@ server = function(input, output, session) {
 
         #shiller table there, eventually just add in the S&P 500 shiller
         #have an if/else that displays whether or not this stock is over or under valued based on the shiller pe ratio
+    })
+    output$overOrUnder = renderText({
+        paste("")
+        
     })
     
     

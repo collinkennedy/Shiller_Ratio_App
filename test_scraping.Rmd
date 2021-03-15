@@ -13,7 +13,7 @@ library(stringr)
 library(httr)
 library(jsonlite)
 library(pool)
-
+library(DBI)
 
 ```
 
@@ -98,7 +98,7 @@ SP500 = read_csv("constituents_csv.csv")
 dbWriteTable(con, "SP500Table", SP500)
 con %>% dbListTables()
 
-
+con %>% tbl("SP500Table") %>% head(5)
 
 ```
 
@@ -217,7 +217,21 @@ SP500 %>% filter(Name == "Nvidia Corporation")
 ggplot(data = inflation_adjusted_eps_df, mapping =aes(x = Year, y = inf_adj_eps))+
             geom_col()
 
-?geom_bar()
+sp500 = as_tibble(con %>% tbl("SP500Table"))
+sp500
+sp500 %>% filter(Sector == "Airlines")
+#rename Name of american airlines group
+
+
+sp500 = sp500 %>% mutate(Symbol = replace(Symbol,Name == "American Airlines Group", "AAL"))
+sp500 %>% filter(Symbol == "AAL")
+
+dbWriteTable(con,"SP500Table", sp500, overwrite = TRUE)
+#rename 
+con %>% tbl("SP500Table") %>% 
+  arrange(Name)
+  
+
 ```
 
 
@@ -226,10 +240,12 @@ ggplot(data = inflation_adjusted_eps_df, mapping =aes(x = Year, y = inf_adj_eps)
 ```{r}
 #make industry tibble:
 con %>% dbListTables()
-con %>% tbl("SP500Table") %>% 
-  group_by(Sector) %>% summarize(comp_per_sector = n()) %>% 
+sectors = con %>% tbl("SP500Table") %>% 
+  group_by(Sector) %>% summarize(comp_per_sector = n()) %>% select(Sector)
+sectors = as_tibble(sectors)
+sectors$Sector
 
-con %>% 
+  
 ```
 
 
