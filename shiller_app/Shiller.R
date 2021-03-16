@@ -47,7 +47,10 @@ ui = fluidPage(
             
             selectInput(inputId = "stockChoice",
                         label = "Select a Company",
-                        choices = c("-", sort(sp500$Name)))
+                        choices = c("-", sort(sp500$Name))),
+            tags$div(class="header", checked=NA,
+                     tags$p("Details on this app can be found on my GitHub"),
+                     tags$a(href="https://github.com/collinkennedy/Shiller_Ratio_App/blob/master/README.md", "Click Here!"))
             
         ),      
         mainPanel(
@@ -56,7 +59,8 @@ ui = fluidPage(
             tableOutput("shillerRatio"),
             textOutput("overOrUnder"),
             textOutput("eps_title"),
-            plotOutput("eps_hist")
+            plotOutput("eps_hist"),
+            textOutput("readme")
         )
     )
 )
@@ -86,6 +90,7 @@ server = function(input, output, session) {
         #use regex to convert the date into just a 4 digit year
         annual_eps = data$annualEarnings
         fiscal_year = annual_eps %>% pull(fiscalDateEnding)
+
         
         pattern = "\\d\\d\\d\\d"
         simple_fiscal_year = str_extract(fiscal_year,regex(pattern) )
@@ -139,10 +144,14 @@ server = function(input, output, session) {
                                 apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
         data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
         
+        shiny::validate(
+            need(data$annualEarnings$fiscalDateEnding, message = "too many API requests! Please wait 20-30 seconds and try again")
+        )
         
         #use regex to convert the date into just a 4 digit year
         annual_eps = data$annualEarnings
         fiscal_year = annual_eps %>% pull(fiscalDateEnding)
+       
         
         pattern = "\\d\\d\\d\\d"
         simple_fiscal_year = str_extract(fiscal_year,regex(pattern) )
@@ -239,23 +248,25 @@ server = function(input, output, session) {
     })
     
     
-    output$eps_title = renderText({
-        if(req(nrow(shiller_data()>0))){
-        paste(company_data()$Name,"'s Inflation-Adjusted Earnings Per Share: 2011 - 2020")
-        }
-    })
+    # output$eps_title = renderText({
+    #     if(req(nrow(shiller_data()>0))){
+    #     paste(company_data()$Name,"'s Inflation-Adjusted Earnings Per Share: 2011 - 2020")
+    #     }
+    # })
     
     output$eps_hist = renderPlot({
         #inflation adjusted data here
         ggplot(data = inflation_data(),mapping = aes(x = Year, y = inf_adj_eps))+
             geom_col(colour = "black", fill = "darkgreen")+xlab("Year")+ scale_x_continuous(breaks = seq(2011, 2020, by = 1))+
-            ylab("Inflation-adjusted Earnings per Share")+
+            ylab("Inflation-adjusted Earnings per Share")+ggtitle(paste("Inflation-Adjusted Earnings for",company_data()$Name, ": 2011 - 2020"))+
             theme_minimal()
     })
+   
     
 }
 
 
-?geom_col
+
+
 shinyApp(ui, server)
 

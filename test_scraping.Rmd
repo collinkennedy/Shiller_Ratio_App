@@ -71,6 +71,18 @@ text$annualEarnings
 api_call = GET(str_glue("https://www.alphavantage.co/query?function=EARNINGS&symbol={symbol}&apikey={apikey}",symbol = "IBM", 
          apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
 data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
+str(api_call)
+str(data)
+data
+
+str(data)
+
+#check if data is a list, if it is the api call was unsuccessful
+if(is.list(data)){
+  paste("not a successful API call")
+}else{
+  paste("success!")
+}
 data$annualEarnings
 
 #make sure they're the same:
