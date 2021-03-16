@@ -211,19 +211,28 @@ server = function(input, output, session) {
     output$shillerTitle = renderText({
         #Shiller Ratio of ____ and S&P 500
         if(req(nrow(shiller_data()>0))){
-            paste("Shiller P/E for ", company_data()$Name, ":")
+            if(shiller_data()[1] > as.numeric(sp500shiller[1])){
+                paste("Shiller P/E for ", company_data()$Name, ":", shiller_data()[1], "(Overvalued)")
+                
+            }
+            else if(shiller_data()[1] == as.numeric(sp500shiller[1])){
+                paste("Shiller P/E for ", company_data()$Name, ":", shiller_data()[1])
+            }else{
+                paste("Shiller P/E for ", company_data()$Name, ":", shiller_data()[1], "(Undervalued)")
+            }
+            
 
         }
     })
     
     #Shiller table output
-    output$shillerRatio = renderTable({
-        shiller_data() %>% head(5)
-
-
-        #shiller table there, eventually just add in the S&P 500 shiller
-        #have an if/else that displays whether or not this stock is over or under valued based on the shiller pe ratio
-    })
+    # output$shillerRatio = renderTable({
+    #     shiller_data() %>% head(5)
+    # 
+    # 
+    #     #shiller table there, eventually just add in the S&P 500 shiller
+    #     #have an if/else that displays whether or not this stock is over or under valued based on the shiller pe ratio
+    # })
     output$overOrUnder = renderText({
         paste("")
         
@@ -239,11 +248,13 @@ server = function(input, output, session) {
     output$eps_hist = renderPlot({
         #inflation adjusted data here
         ggplot(data = inflation_data(),mapping = aes(x = Year, y = inf_adj_eps))+
-            geom_col(colour = "black", fill = "darkgreen")+xlab("Year") + ylab("Inflation-adjusted Earnings per Share")+
+            geom_col(colour = "black", fill = "darkgreen")+xlab("Year")+ scale_x_continuous(breaks = seq(2011, 2020, by = 1))+
+            ylab("Inflation-adjusted Earnings per Share")+
             theme_minimal()
     })
     
 }
+
 
 ?geom_col
 shinyApp(ui, server)
