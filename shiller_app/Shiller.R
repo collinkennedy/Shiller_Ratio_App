@@ -86,7 +86,7 @@ server = function(input, output, session) {
                                 apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
         data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
         
-        
+?str_glue        
         #use regex to convert the date into just a 4 digit year
         annual_eps = data$annualEarnings
         fiscal_year = annual_eps %>% pull(fiscalDateEnding)

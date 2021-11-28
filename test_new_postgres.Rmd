@@ -1,0 +1,50 @@
+---
+title: "environment_setup"
+author: "Collin"
+date: "11/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DBI)
+library(tidyverse)
+library(RPostgres)
+```
+
+Copy the API key in the file `.Renviron` and do not push it to github!
+
+```{r, eval = FALSE}
+usethis::edit_r_environ("project")
+```
+
+
+```{r, eval = FALSE}
+readRenviron(".Renviron")
+```
+
+
+```{r}
+Sys.getenv("APIKey")
+
+```
+
+#test
+```{r}
+
+host = host <- "ec2-3-230-199-240.compute-1.amazonaws.com"
+con <- dbConnect(
+    RPostgres::Postgres(),
+    dbname = "dbukerqeq48ibb",
+    user = "wsomssizlrlnbm", 
+    port = 5432,
+    password = Sys.getenv("dp_pw"), 
+    host = host,
+    sslmode = "require")
+
+?dbConnect
+#access the inflation data, store it for easy use
+
+
+```
+
