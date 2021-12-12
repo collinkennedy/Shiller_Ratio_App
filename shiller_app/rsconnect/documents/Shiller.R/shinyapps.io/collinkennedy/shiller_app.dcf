@@ -1,0 +1,13 @@
+name: shiller_app
+title: shiller_app
+username:
+account: collinkennedy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5312017
+bundleId: 5361090
+url: https://collinkennedy.shinyapps.io/shiller_app/
+when: 1639271976.36877
+lastSyncTime: 1639271976.36879
+asMultiple: FALSE
+asStatic: FALSE

@@ -23,7 +23,7 @@ con <- dbConnect(
   dbname = "dbukerqeq48ibb",
   user = "wsomssizlrlnbm", 
   port = 5432,
-  password = Sys.getenv("DB_PW"), 
+  password = Sys.getenv("DATABASEPW"), 
   host = host,
   sslmode = "require")
 

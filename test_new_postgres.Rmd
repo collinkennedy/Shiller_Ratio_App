@@ -30,7 +30,7 @@ readRenviron(".Renviron")
 # Sys.getenv("APIKey")
 Sys.getenv("DB_PW")
 
-
+Sys.getenv("DATABASEPW")
 ```
 
 #test
@@ -45,6 +45,8 @@ con <- dbConnect(
     password = Sys.getenv("DB_PW"), 
     host = host,
     sslmode = "require")
+
+con %>% dbListTables()
 
 ?dbConnect
 #access the inflation data, store it for easy use
