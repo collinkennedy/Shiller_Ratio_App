@@ -5,3 +5,5 @@
 .Renviron
 NASDAQ.txt
 .app.R
+SP500.txt
+test_new_postgres.Rmd

@@ -11,3 +11,6 @@ Some other things to note: The AlphaVantage API only gives me access to a compan
 
 Here is the url for the app:
 https://collinkennedy.shinyapps.io/shiller_application/?_ga=2.178165666.641418848.1615921325-452931229.1615921325
+
+
+Update: my database on GCP is not currently running since my credit for the service expired. Currently looking for a free Postgres database solution so I can get the app back up and running
