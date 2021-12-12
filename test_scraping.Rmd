@@ -105,7 +105,7 @@ data$annualEarnings
 
 ```{r}
 #check S&P 500 data:
-SP500 = read_csv("constituents_csv.csv")
+SP500 =  read_csv("SP500.txt")
 
 dbWriteTable(con, "SP500Table", SP500)
 con %>% dbListTables()

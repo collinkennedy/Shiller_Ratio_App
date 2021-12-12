@@ -5,14 +5,28 @@ library(reader)
 ?library(httr)
 library(rvest)
 
-host <- "34.123.54.80"  # replace it with your server ip
-# NASDAQ <- read.delim("~/Google Drive/Programming Folder (4Transfer to Collin's Files V2)/R/STA141B/data_technologies_project/NASDAQ.txt")
+# host <- "34.123.54.80"  # replace it with your server ip
+# # NASDAQ <- read.delim("~/Google Drive/Programming Folder (4Transfer to Collin's Files V2)/R/STA141B/data_technologies_project/NASDAQ.txt")
+# 
+# 
+# con <- dbConnect(
+#   RPostgres::Postgres(),
+#   dbname = "postgres",
+#   user = "postgres", password = Sys.getenv("DATABASEPW"), host = host)
 
 
+
+
+host = host <- "ec2-3-230-199-240.compute-1.amazonaws.com"
 con <- dbConnect(
   RPostgres::Postgres(),
-  dbname = "postgres",
-  user = "postgres", password = Sys.getenv("DATABASEPW"), host = host)
+  dbname = "dbukerqeq48ibb",
+  user = "wsomssizlrlnbm", 
+  port = 5432,
+  password = Sys.getenv("DB_PW"), 
+  host = host,
+  sslmode = "require")
+
 
 #scrape for inflatoin data, then add to database:
 web_source= read_html("https://inflationdata.com/Inflation/Inflation_Rate/HistoricalInflation.aspx")

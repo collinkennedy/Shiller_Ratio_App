@@ -8,7 +8,7 @@
 #
 
 library(shiny)
-
+library(RPostgres)
 # library(DBI)
 library(rvest)
 library(tidyverse)
@@ -17,13 +17,25 @@ library(pool)
 library(httr)
 library(jsonlite)
 
-
 #access my database
-host = host <- "34.123.54.80"
+# host = host <- "34.123.54.80"
+# con <- dbPool(
+#     RPostgres::Postgres(),
+#     dbname = "postgres",
+#     user = "postgres", password = Sys.getenv("DATABASEPW"), host = host)
+
+
+#access new database
+host = host <- "ec2-3-230-199-240.compute-1.amazonaws.com"
 con <- dbPool(
     RPostgres::Postgres(),
-    dbname = "postgres",
-    user = "postgres", password = Sys.getenv("DATABASEPW"), host = host)
+    dbname = "dbukerqeq48ibb",
+    user = "wsomssizlrlnbm", 
+    port = 5432,
+    password = Sys.getenv("DB_PW"), 
+    host = host,
+    sslmode = "require")
+
 #access the inflation data, store it for easy use
 inflation_table = as_tibble(con %>% tbl("inflationTable")) #both of these are successfully accessed
 sp500 = as_tibble(con %>% tbl("SP500Table"))
@@ -86,7 +98,7 @@ server = function(input, output, session) {
                                 apikey = Sys.getenv("ALPHA_VANTAGE_APIKEY") ))
         data = fromJSON(content(api_call, type = "text", encoding = "UTF-8"))
         
-?str_glue        
+       
         #use regex to convert the date into just a 4 digit year
         annual_eps = data$annualEarnings
         fiscal_year = annual_eps %>% pull(fiscalDateEnding)
@@ -221,13 +233,13 @@ server = function(input, output, session) {
         #Shiller Ratio of ____ and S&P 500
         if(req(nrow(shiller_data()>0))){
             if(shiller_data()[1] > as.numeric(sp500shiller[1])){
-                paste("Shiller P/E for ", company_data()$Name, ":", shiller_data()[1], "(Overvalued)")
+                paste("Shiller P/E for ", company_data()$Name, ":", round(shiller_data()[1],2), "(Overvalued)")
                 
             }
             else if(shiller_data()[1] == as.numeric(sp500shiller[1])){
-                paste("Shiller P/E for ", company_data()$Name, ":", shiller_data()[1])
+                paste("Shiller P/E for ", company_data()$Name, ":", round(shiller_data()[1],2))
             }else{
-                paste("Shiller P/E for ", company_data()$Name, ":", shiller_data()[1], "(Undervalued)")
+                paste("Shiller P/E for ", company_data()$Name, ":", round(shiller_data()[1],2), "(Undervalued)")
             }
             
 

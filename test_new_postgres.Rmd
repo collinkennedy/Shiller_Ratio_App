@@ -10,9 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(DBI)
 library(tidyverse)
 library(RPostgres)
+library(rvest)
+library(httr)
 ```
-
-Copy the API key in the file `.Renviron` and do not push it to github!
 
 ```{r, eval = FALSE}
 usethis::edit_r_environ("project")
@@ -21,11 +21,15 @@ usethis::edit_r_environ("project")
 
 ```{r, eval = FALSE}
 readRenviron(".Renviron")
+
+
 ```
 
 
 ```{r}
-Sys.getenv("APIKey")
+# Sys.getenv("APIKey")
+Sys.getenv("DB_PW")
+
 
 ```
 
@@ -38,13 +42,295 @@ con <- dbConnect(
     dbname = "dbukerqeq48ibb",
     user = "wsomssizlrlnbm", 
     port = 5432,
-    password = Sys.getenv("dp_pw"), 
+    password = Sys.getenv("DB_PW"), 
     host = host,
     sslmode = "require")
 
 ?dbConnect
 #access the inflation data, store it for easy use
 
+
+```
+
+
+# test
+```{r}
+
+
+Foods = data.frame(name = c("Cheesechake", "Canned Salmon", "Avocado", "Fried Chicken", "Ice Cream", "Brazil Nut"),
+               category = c("Dessert", "Seafood", "Fruit","Meat Product","Milk Product", "Nuts"),
+               price = c(600,1650,810,1290,300,980),
+               fatpercentage = c(35,8,22,11,7,62))
+
+
+if(con %>% dbExistsTable("Foods")){
+  print("table exists")
+}else{
+  con %>% dbWriteTable("Foods",Foods)
+  
+}
+
+
+con %>% 
+  dbListFields("Foods")
+
+
+
+#Obtain all the rows where the fat percentage is less than the average fat percentage
+
+#R:
+con %>% 
+  tbl("Foods") %>% 
+  mutate(average_fatpercentage = mean(fatpercentage)) %>% 
+  filter(fatpercentage < average_fatpercentage) %>% 
+  show_query()
+
+#Using SQL only
+```
+
+
+```{sql connection = con, output.var = "e", warning = FALSE}
+
+```
+
+
+```{sql connection = con, output.var = "e", warning = FALSE}
+
+/*create a cte and then query from that*/
+With "mycte" as(
+select *, avg("fatpercentage") OVER() as "average_fatpercentage"
+from "Foods"
+)
+select *
+from "mycte"
+where "fatpercentage" < "average_fatpercentage"
+
+```
+
+
+
+```{r}
+#create the difficult query
+
+departments = data.frame(id = c(1,2,3),
+                         name = c("IT","HR","Sales"))
+#write departments to database:
+if(con %>% dbExistsTable("departments")){
+  print("table exists")
+}else{
+  con %>% dbWriteTable("departments",departments)
+}
+
+employees = data.frame(id = c(1,2,3,4,5,8,9,10),
+                       full_name = c("James Smith","John Johnson","Robert Jones","Michael Williams", "Mary Troppins","Penny Old", "Richard Young", "Drew Rich"),
+                       salary = c(20,13,15,15,17,14,17,50),
+                       department = c(1,1,1,1,1,2,2,3))
+
+
+if(con %>% dbExistsTable("employees")){
+  print("table exists")
+}else{
+  con %>% dbWriteTable("employees",employees)
+}
+
+
+employees
+#department column in employees table corresponds to "id" column in department table, Join on that
+
+merged_table = employees %>% 
+  inner_join(departments, by = c("department" = "id") )
+
+merged_table
+
+departments
+```
+
+#SQL Query
+-select all departments with less than `6` employees
+- sort these departments by the total salary of its workers in descending order, in the case of a tie, 
+the department with the GREATEST NUMBER of employees should go first, if its still not enough to break a tie,
+the department with the smallest id should go first
+- cross out the departments at the even rows and leave only those in the odd rows, to consider them more thoroughly afterwards
+
+Given tables  `employees` and `departments`, your task is to write a select statement described above. The output should have columns `dep_name`, `emp_number`(number of employees in the department), and `total_salary` (the sum of all the employees' salaries in this department)
+and be sorted according to the specifications above
+
+```{sql connection = con, output.var = "big_query"}
+with "mycte" as(
+  select "departments"."id" as "dep_name", count("full_name") as "emp_number", sum("salary") over(PARTITION BY  "departments"."id") as "total_salary"
+  from "employees"
+  left join "departments"
+  on "employees"."department" = "departments"."id"
+  group by "department"
+  having count("departments"."id") < 6 
+)
+
+select *
+from "mycte"
+
+
+
+```
+
+
+```{sql connection = con, output.var = "big_query"}
+select "employees.department"
+from "employees"
+```
+
+```{r}
+
+
+```
+
+
+#Test case 1
+```{r}
+expected_output1 = data.frame(dep_name = c("IT","HR"),
+                                  emp_number = c(5,2),
+                                  total_salary = c(80,31))
+
+```
+
+
+
+
+#FB mock interview SQL question
+Assume that a user is considered churned if they haven't displayed any active behavior (read, comment, like, post) in the past 7 days. How many users have churned as of today? Use the table below to address this question:
+```{r}
+library(lubridate)
+years = c(2021,2021,2021,2021)
+months = c(02,02,02,02)
+days = c(01,01,04,02)
+hour = c(03,09,02,03)
+minute = c(42,46,42,42)
+second = c(22,14,24,22)
+#create the Usage table
+datetimes = make_datetime(year = years,month = months,day = days,hour = hour,min = minute,sec = second,tz = "EST")
+datetimes
+Usage = data.frame(timestamp = datetimes,
+                   user_id = c("@lax_max", "@KChris", "@PhotoRX", "@BobDoe"),
+                   activity = c("read", "comment", "sign-in","post"))
+?make_datetime
+
+#write the table to the database
+dbRemoveTable(conn = con,"Usage" )
+
+dbWriteTable(con,"Usage",Usage)
+
+#IN DPLYR:
+
+con %>% 
+  tbl("Usage") %>% 
+  filter(activity == "sign-in") %>% 
+  summarise(number_of_churned = n())
+  
+
+
+  
+```
+
+```{sql connection = con, output.var = "fb"}
+select count(distinct(user_id))
+from "Usage"
+where activity = 'sign-in'
+and timestamp between '2021-02-01' and '2021-02-07'
+
+
+
+```
+
+
+```{r}
+fb
+
+```
+
+
+```{r}
+
+host = host <- "ec2-3-230-199-240.compute-1.amazonaws.com"
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "dbukerqeq48ibb",
+  user = "wsomssizlrlnbm", 
+  port = 5432,
+  password = Sys.getenv("DB_PW"), 
+  host = host,
+  sslmode = "require")
+
+
+#scrape for inflatoin data, then add to database:
+web_source= read_html("https://inflationdata.com/Inflation/Inflation_Rate/HistoricalInflation.aspx")
+table = web_source %>% 
+  html_nodes("table") %>% 
+  html_table()
+
+inflation_table = as_tibble(table[[1]]) 
+
+
+inflation_table = inflation_table %>% 
+  slice(2:208) %>% 
+  select(Year, Ave.) %>% 
+  rename("average_inflation" = "Ave.")
+
+avg_inf = inflation_table %>% 
+  pull %>% parse_number()
+avg_inf = avg_inf/100 
+
+inflation_table = inflation_table %>% 
+  select(Year) %>% 
+  bind_cols(avg_inf) %>% 
+  rename("average_inflation" = "...2")
+
+#write to database/update database with inflation data
+dbWriteTable(con, "inflationTable", inflation_table, overwrite = TRUE)
+
+
+
+#get SP500 Shiller PE ratio
+web_page = read_html("https://www.gurufocus.com/shiller-PE.php")
+scraped = web_page %>% html_nodes("h3") %>% html_text()
+sp500_shiller_pe = str_extract(scraped[14],"\\d\\d[.]\\d*") %>% as.numeric()
+sp500_shiller_table = tibble(sp500_shiller_pe = sp500_shiller_pe)
+dbWriteTable(con,"SP500ShillerTable", sp500_shiller_table, overwrite = TRUE)
+
+
+
+NASDAQ =  read_delim("NASDAQ.txt", delim = "\t", 
+    escape_double = FALSE, trim_ws = TRUE)
+
+if (!("tickerTable" %in% dbListTables(con))) {
+  # create table if it doesn't exist
+  dbWriteTable(
+    con,
+    "tickerTable",
+    NASDAQ#fix this
+  )
+}
+# 
+# 
+#S&P 500 Data
+if (!("SP500Table" %in% dbListTables(con))) {
+  # create table if it doesn't exist
+  dbWriteTable(
+    con,
+    "SP500Table",
+    SP500#fix this
+  )
+}
+
+
+con %>% dbListTables
+con %>% 
+  dbListFields("SP500ShillerTable")
+
+con %>% 
+  tbl("SP500ShillerTable")
+
+
+con %>% 
+  tbl("inflationTable")
 
 ```
 

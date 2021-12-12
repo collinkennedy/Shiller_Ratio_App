@@ -14,7 +14,7 @@ library(ggplot2)
 library(pool)
 library(httr)
 library(jsonlite)
-?read_html
+
 # devtools::install_github("rstudio/pool")
 
 #access my database
@@ -57,18 +57,6 @@ ui <- fluidPage(
         )
     )
 )
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -165,6 +153,7 @@ server <- function(input, output,session) {
 
     }
 }
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
