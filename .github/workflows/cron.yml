@@ -22,4 +22,4 @@ jobs:
       - name: Run job
         run: Rscript cron.R
         env:
-          DATABASEPW: ${{secrets.DATABASEPW}}
+          DB_PW: ${{secrets.DATABASEPW}}
