@@ -26,7 +26,7 @@ library(jsonlite)
 
 
 #access new database
-host = host <- "ec2-3-230-199-240.compute-1.amazonaws.com"
+host =  "ec2-3-230-199-240.compute-1.amazonaws.com"
 con <- dbPool(
     RPostgres::Postgres(),
     dbname = "dbukerqeq48ibb",
