@@ -59,8 +59,8 @@ dbWriteTable(con, "inflationTable", inflation_table, overwrite = TRUE)
 #get SP500 Shiller PE ratio
 web_page = read_html("https://www.gurufocus.com/shiller-PE.php")
 scraped = web_page %>% html_nodes("h3") %>% html_text()
-sp500_shiller_pe = str_extract(scraped[15],"\\d\\d[.]\\d*")
-sp500_shiller_table = tibble(sp500_shiller_pe = sp500_shiller_pe)
+sp500_shiller_pe = str_extract(scraped[5],"\\d\\d[.]\\d*")
+sp500_shiller_table = tibble(sp500_shiller_pe = as.numeric(sp500_shiller_pe))
 dbWriteTable(con,"SP500ShillerTable", sp500_shiller_table, overwrite = TRUE)
 
 
