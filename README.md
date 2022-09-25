@@ -1,5 +1,5 @@
-# data_technologies_project
-##OVERVIEW:
+# Shiller Ratio Application
+## OVERVIEW:
 
 The Shiller Ratio (otherwise known as ‘CAPE’ or the Cyclically-Adjusted Price to Earnings Ratio) is a financial metric developed by Nobel Prize-winning Economist Robert Shiller.  Building off the work of value investing forefathers Benjamin Graham and David Dodd, Shiller  theorized that a moving average of inflation adjusted earnings, as opposed to nominal earnings  (which is typically used in standard price-to-earnings calculations), allowed for better predictability of future (real) dividends, and consequently future returns as well. 
 
