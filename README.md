@@ -10,7 +10,6 @@ For current price and earnings data, I used the https://www.alphavantage.co API.
 Some other things to note: The AlphaVantage API only gives me access to a company’s earnings/ earnings per share. Some websites use diluted earnings per share (ie, GuruFocus). This is admittedly a better metric to use, but since I didn’t have access to it, I make do with good ‘ol earnings. In terms of actually calculating the inflation adjusted earnings per share (E10), I referred to this website: https://www.educba.com/cape-ratio/.
 
 Here is the url for the app:
-https://collinkennedy.shinyapps.io/shiller_application/?_ga=2.178165666.641418848.1615921325-452931229.1615921325
-
+https://collinkennedy.shinyapps.io/shiller_app_2/
 
 Update: my database on GCP is not currently running since my credit for the service expired. Currently looking for a free Postgres database solution so I can get the app back up and running
